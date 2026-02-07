@@ -27,6 +27,10 @@ func NewOpsServer(addr string, logger *zap.Logger) *OpsServer {
 	}
 }
 
+func (o *OpsServer) Register(pattern string, handler http.HandlerFunc) {
+	o.server.Handler.(*http.ServeMux).HandleFunc(pattern, handler)
+}
+
 // Run поднимает http сервер.
 func (o *OpsServer) Run(ctx context.Context) error {
 	o.logger.Info("operation server is running", zap.String("address", o.server.Addr))
