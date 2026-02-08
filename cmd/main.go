@@ -25,6 +25,12 @@ func main() {
 	opsSrv := http.NewOpsServer(":8080", logger)
 
 	userService, err := userServ.NewServiceUser(logger)
+	if err != nil {
+		if err != nil {
+			logger.Error("error to create category cache repository", zap.Error(err))
+			return
+		}
+	}
 	// Создаём хендлеры
 	userHandler := deliveryHTTP.NewUserHandler(*userService, logger)
 
