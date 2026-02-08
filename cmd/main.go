@@ -64,7 +64,7 @@ func main() {
 	userHandler := deliveryHTTP.NewUserHandler(*userService, logger)
 
 	// Регистрируем роуты
-	opsSrv.Register("GET /api/v1/users/info", userHandler.GetInfo)
+	opsSrv.Register("/api/v1/users/info", userHandler.GetInfo)
 	if err := opsSrv.Run(ctx); err != nil {
 		logger.Fatal("server failed", zap.Error(err))
 	}
