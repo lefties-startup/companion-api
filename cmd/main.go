@@ -3,10 +3,15 @@ package main
 import (
 	"context"
 	"github.com/lefties-startup/companion-api/connect/http"
+	"github.com/lefties-startup/companion-api/connect/postgres"
+	"github.com/lefties-startup/companion-api/internal/companion"
 	deliveryHTTP "github.com/lefties-startup/companion-api/internal/delivery/http"
 	userServ "github.com/lefties-startup/companion-api/internal/service/user"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
+	pgClient "github.com/lefties-startup/companion-api/internal/client/postgres"
+	pgRepository "github.com/lefties-startup/companion-api/internal/repository/postgres"
 )
 
 func main() {
@@ -18,13 +23,37 @@ func main() {
 
 	defer logger.Sync() //nolint:errcheck
 	defer catchPanic(logger)
+
+	config, err := companion.Load()
+	if err != nil {
+		logger.Error("error to parse configuration", zap.Error(err))
+		return
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	// Создаём сервер
 	opsSrv := http.NewOpsServer(":8080", logger)
 
-	userService, err := userServ.NewServiceUser(logger)
+	pgConn, err := postgres.OpenConnection(config.Postgres.Manager)
+	if err != nil {
+		logger.Error("error to open postgres master connection", zap.Error(err))
+		return
+	}
+	postgresClient, err := pgClient.New(pgConn)
+	if err != nil {
+		logger.Error("error to create postgres client", zap.Error(err))
+		return
+	}
+
+	userRepository, err := pgRepository.NewRepository(postgresClient)
+	if err != nil {
+		logger.Error("error to create category postgres repository", zap.Error(err))
+		return
+	}
+
+	userService, err := userServ.NewServiceUser(logger, userRepository)
 	if err != nil {
 		if err != nil {
 			logger.Error("error to create category cache repository", zap.Error(err))
@@ -36,6 +65,9 @@ func main() {
 
 	// Регистрируем роуты
 	opsSrv.Register("GET /api/v1/users/info", userHandler.GetInfo)
+	if err := opsSrv.Run(ctx); err != nil {
+		logger.Fatal("server failed", zap.Error(err))
+	}
 }
 
 func catchPanic(logger *zap.Logger) {

@@ -1,12 +1,13 @@
-postgres: &postgres
-  host: 127.0.0.1
-  port: 5432
-  db: companion
-  user: companion
-  password: secret
-  ssl_mode: disable
-  max_connection: 10
-  binary_parameters: no
+postgres_manager:
+  manager:
+    host: 127.0.0.1
+    port: 5432
+    db: companion
+    user: companion
+    password: secret
+    ssl_mode: disable
+    max_connection: 10
+    binary_parameters: no
 
 log_level: info
 http_addr: :8080

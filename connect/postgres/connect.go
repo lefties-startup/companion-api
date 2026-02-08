@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/jackc/pgx/v5/stdlib"
 	"net"
@@ -65,4 +66,24 @@ func open(config Config) (*sqlx.DB, error) {
 	}
 
 	return conn, nil
+}
+
+func (c *Connection) ExecContext(ctx context.Context, telemetryName string, query string, args ...any) (sql.Result, error) {
+	return c.db.ExecContext(context.WithValue(ctx, ctxTelemetryName, telemetryName), query, args...)
+}
+
+func (c *Connection) GetContext(ctx context.Context, telemetryName string, dest any, query string, args ...any) error {
+	return c.db.GetContext(context.WithValue(ctx, ctxTelemetryName, telemetryName), dest, query, args...)
+}
+
+func (c *Connection) NamedExecContext(ctx context.Context, telemetryName string, query string, arg any) (sql.Result, error) {
+	return c.db.NamedExecContext(context.WithValue(ctx, ctxTelemetryName, telemetryName), query, arg)
+}
+
+func (c *Connection) PrepareNamedContext(ctx context.Context, telemetryName string, query string) (*sqlx.NamedStmt, error) {
+	return c.db.PrepareNamedContext(context.WithValue(ctx, ctxTelemetryName, telemetryName), query)
+}
+
+func (c *Connection) SelectContext(ctx context.Context, telemetryName string, dest any, query string, args ...any) error {
+	return c.db.SelectContext(context.WithValue(ctx, ctxTelemetryName, telemetryName), dest, query, args...)
 }

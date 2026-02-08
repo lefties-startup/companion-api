@@ -1,8 +1,8 @@
 package http
 
 import (
-	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/lefties-startup/companion-api/internal/service"
 	userServ "github.com/lefties-startup/companion-api/internal/service/user"
 	"github.com/pkg/errors"
@@ -25,6 +25,7 @@ func NewUserHandler(svc userServ.ServiceUser, logger *zap.Logger) *UserHandler {
 
 func (h *UserHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 	tgIDStr := r.URL.Query().Get("tg_user_id")
+	fmt.Println("test")
 	if tgIDStr == "" {
 		http.Error(w, `{"error": "missing tg_user_id"}`, http.StatusBadRequest)
 		return
